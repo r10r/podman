@@ -7,6 +7,7 @@ import (
 	"github.com/containers/podman/v4/libpod/events"
 	"github.com/containers/podman/v4/pkg/domain/entities/reports"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Contains the public Runtime API for volumes
@@ -127,8 +128,10 @@ func (r *Runtime) PruneVolumes(ctx context.Context, filterFuncs []VolumeFilter) 
 		report := new(reports.PruneReport)
 		volSize, err := vol.Size()
 		if err != nil {
+			logrus.Errorf("--> PruneVolumes: %#v: %s", vol, err)
 			volSize = 0
 		}
+		logrus.Debugf("--> PruneVolumes: size:%d %#v: %s", volSize, vol)
 		report.Size = volSize
 		report.Id = vol.Name()
 		var timeout *uint
