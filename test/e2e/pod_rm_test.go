@@ -2,7 +2,6 @@ package integration
 
 import (
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -47,14 +46,14 @@ var _ = Describe("Podman pod rm", func() {
 		Expect(result).Should(Exit(0))
 
 		// Also check that we don't leak cgroups
-		err := filepath.WalkDir("/sys/fs/cgroup", func(path string, d fs.DirEntry, err error) error {
+		err := filepath.Walk("/sys/fs/cgroup", func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			if !d.IsDir() {
+			if !info.IsDir() {
 				Expect(err).To(BeNil())
 			}
-			if strings.Contains(d.Name(), podid) {
+			if strings.Contains(info.Name(), podid) {
 				return fmt.Errorf("leaking cgroup path %s", path)
 			}
 			return nil
