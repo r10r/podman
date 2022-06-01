@@ -1022,10 +1022,10 @@ func getVMInfos() ([]*machine.ListResponse, error) {
 
 	var listed []*machine.ListResponse
 
-	if err = filepath.WalkDir(vmConfigDir, func(path string, d fs.DirEntry, err error) error {
+	if err = filepath.Walk(vmConfigDir, func(path string, info os.FileInfo, err error) error {
 		vm := new(MachineVM)
-		if strings.HasSuffix(d.Name(), ".json") {
-			fullPath := filepath.Join(vmConfigDir, d.Name())
+		if strings.HasSuffix(info.Name(), ".json") {
+			fullPath := filepath.Join(vmConfigDir, info.Name())
 			b, err := ioutil.ReadFile(fullPath)
 			if err != nil {
 				return err

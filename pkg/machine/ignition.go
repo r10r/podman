@@ -6,7 +6,6 @@ package machine
 import (
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -526,8 +525,8 @@ func getCerts(certsDir string, isDir bool) []File {
 	)
 
 	if isDir {
-		err := filepath.WalkDir(certsDir, func(path string, d fs.DirEntry, err error) error {
-			if err == nil && !d.IsDir() {
+		err := filepath.Walk(certsDir, func(path string, info os.FileInfo, err error) error {
+			if err == nil && !info.IsDir() {
 				certPath, err := filepath.Rel(certsDir, path)
 				if err != nil {
 					logrus.Warnf("%s", err)
