@@ -152,6 +152,8 @@ func create(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	logrus.Debugf("--> create")
+
 	report, err := registry.ContainerEngine().ContainerCreate(registry.GetContext(), s)
 	if err != nil {
 		return err

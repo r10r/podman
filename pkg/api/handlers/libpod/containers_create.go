@@ -14,6 +14,7 @@ import (
 	"github.com/containers/podman/v4/pkg/specgen/generate"
 	"github.com/containers/podman/v4/pkg/specgenutil"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // CreateContainer takes a specgenerator and makes a container. It returns
@@ -60,6 +61,8 @@ func CreateContainer(w http.ResponseWriter, r *http.Request) {
 		utils.InternalServerError(w, err)
 		return
 	}
+
+	logrus.Debugf("--> libpod.ContainerCreate")
 	rtSpec, spec, opts, err := generate.MakeContainer(context.Background(), runtime, &sg, false, nil)
 	if err != nil {
 		utils.InternalServerError(w, err)

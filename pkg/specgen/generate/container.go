@@ -347,8 +347,8 @@ func FinishThrottleDevices(s *specgen.SpecGenerator) error {
 }
 
 // ConfigToSpec takes a completed container config and converts it back into a specgenerator for purposes of cloning an existing container
-func ConfigToSpec(rt *libpod.Runtime, specg *specgen.SpecGenerator, contaierID string) (*libpod.Container, *libpod.InfraInherit, error) {
-	c, err := rt.LookupContainer(contaierID)
+func ConfigToSpec(rt *libpod.Runtime, specg *specgen.SpecGenerator, containerID string) (*libpod.Container, *libpod.InfraInherit, error) {
+	c, err := rt.LookupContainer(containerID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -359,6 +359,8 @@ func ConfigToSpec(rt *libpod.Runtime, specg *specgen.SpecGenerator, contaierID s
 
 	conf.Systemd = nil
 	conf.Mounts = []string{}
+
+	logrus.Debugf("ConfigToSpec first %#v", specg)
 
 	if specg == nil {
 		specg = &specgen.SpecGenerator{}
@@ -457,6 +459,8 @@ func ConfigToSpec(rt *libpod.Runtime, specg *specgen.SpecGenerator, contaierID s
 		}
 	}
 
+	logrus.Debugf("---> ConfigToSpec specg #0 %#v", specg)
+
 	specg.IDMappings = &conf.IDMappings
 	specg.ContainerCreateCommand = conf.CreateCommand
 	if len(specg.Rootfs) == 0 {
@@ -497,6 +501,9 @@ func ConfigToSpec(rt *libpod.Runtime, specg *specgen.SpecGenerator, contaierID s
 			})
 		}
 	}
+
+	logrus.Debugf("---> ConfigToSpec Spec %#v", c.Spec())
+	logrus.Debugf("---> ConfigToSpec specg %#v", specg)
 	specg.OverlayVolumes = overlay
 	_, mounts := c.SortUserVolumes(c.Spec())
 	specg.Mounts = mounts

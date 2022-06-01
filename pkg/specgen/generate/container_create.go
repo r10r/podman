@@ -44,15 +44,18 @@ func MakeContainer(ctx context.Context, rt *libpod.Runtime, s *specgen.SpecGener
 		}
 	}
 
+	logrus.Debugf("--> MakeContainer (before Inherit) %#v\n", s)
+
 	options := []libpod.CtrCreateOption{}
 	compatibleOptions := &libpod.InfraInherit{}
 	var infraSpec *spec.Spec
 	if infra != nil {
-		options, infraSpec, compatibleOptions, err = Inherit(*infra, s, rt)
+		options, infraSpec, compatibleOptions, err = Inherit(*infra, nil, rt)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
+	logrus.Debugf("--> MakeContainer (after inherit) %#v", s)
 
 	if err := FinishThrottleDevices(s); err != nil {
 		return nil, nil, nil, err
@@ -137,6 +140,9 @@ func MakeContainer(ctx context.Context, rt *libpod.Runtime, s *specgen.SpecGener
 		return nil, nil, nil, errors.Wrap(err, "invalid config provided")
 	}
 
+	logrus.Debugf("--> MakeContainer %#v", s)
+	logrus.Debugf("--> MakeContainer %#v", rtc)
+
 	finalMounts, finalVolumes, finalOverlays, err := finalizeMounts(ctx, s, rt, rtc, newImage)
 	if err != nil {
 		return nil, nil, nil, err
@@ -151,6 +157,8 @@ func MakeContainer(ctx context.Context, rt *libpod.Runtime, s *specgen.SpecGener
 		return nil, nil, nil, err
 	}
 
+	logrus.Debugf("---> %#v", compatibleOptions)
+	// NOTE compatibleOptions.Mounts includes mounts from /etc/containers/containers.conf
 	infraVol := (len(compatibleOptions.Mounts) > 0 || len(compatibleOptions.Volumes) > 0 || len(compatibleOptions.ImageVolumes) > 0 || len(compatibleOptions.OverlayVolumes) > 0)
 	opts, err := createContainerOptions(rt, s, pod, finalVolumes, finalOverlays, imageData, command, infraVol, *compatibleOptions)
 	if err != nil {
@@ -215,6 +223,7 @@ func MakeContainer(ctx context.Context, rt *libpod.Runtime, s *specgen.SpecGener
 	}
 	return runtimeSpec, s, options, err
 }
+
 func ExecuteCreate(ctx context.Context, rt *libpod.Runtime, runtimeSpec *spec.Spec, s *specgen.SpecGenerator, infra bool, options ...libpod.CtrCreateOption) (*libpod.Container, error) {
 	ctr, err := rt.NewContainer(ctx, runtimeSpec, s, infra, options...)
 	if err != nil {
@@ -534,11 +543,12 @@ func createContainerOptions(rt *libpod.Runtime, s *specgen.SpecGenerator, pod *l
 }
 
 func Inherit(infra libpod.Container, s *specgen.SpecGenerator, rt *libpod.Runtime) (opts []libpod.CtrCreateOption, infraS *spec.Spec, compat *libpod.InfraInherit, err error) {
-	inheritSpec := &specgen.SpecGenerator{}
-	_, compatibleOptions, err := ConfigToSpec(rt, inheritSpec, infra.ID())
+	// inheritSpec := &specgen.SpecGenerator{}
+	_, compatibleOptions, err := ConfigToSpec(rt, s, infra.ID())
 	if err != nil {
 		return nil, nil, nil, err
 	}
+
 	options := []libpod.CtrCreateOption{}
 	infraConf := infra.Config()
 	infraSpec := infraConf.Spec

@@ -695,6 +695,9 @@ func (ic *ContainerEngine) ContainerCreate(ctx context.Context, s *specgen.SpecG
 	for _, w := range warn {
 		fmt.Fprintf(os.Stderr, "%s\n", w)
 	}
+
+	logrus.Debugf("--> ContainerEngine.ContainerCreate")
+
 	rtSpec, spec, opts, err := generate.MakeContainer(context.Background(), ic.Libpod, s, false, nil)
 	if err != nil {
 		return nil, err
@@ -1017,6 +1020,8 @@ func (ic *ContainerEngine) ContainerRun(ctx context.Context, opts entities.Conta
 	for _, w := range warn {
 		fmt.Fprintf(os.Stderr, "%s\n", w)
 	}
+
+	logrus.Debugf("--> ContainerEngine.ContainerRun")
 
 	rtSpec, spec, optsN, err := generate.MakeContainer(ctx, ic.Libpod, opts.Spec, false, nil)
 	if err != nil {

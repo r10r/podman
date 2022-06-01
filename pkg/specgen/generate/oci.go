@@ -176,6 +176,11 @@ func getCgroupPermissons(unmask []string) string {
 func SpecGenToOCI(ctx context.Context, s *specgen.SpecGenerator, rt *libpod.Runtime, rtc *config.Config, newImage *libimage.Image, mounts []spec.Mount, pod *libpod.Pod, finalCmd []string, compatibleOptions *libpod.InfraInherit) (*spec.Spec, error) {
 	cgroupPerm := getCgroupPermissons(s.Unmask)
 
+	logrus.Debugf("--> SpecGenToOCI %#v", s)
+	logrus.Debugf("--> SpecGenToOCI %#v", rtc)
+	logrus.Debugf("--> SpecGenToOCI %#v", mounts)
+	logrus.Debugf("--> SpecGenToOCI %#v", compatibleOptions)
+
 	g, err := generate.New("linux")
 	if err != nil {
 		return nil, err
