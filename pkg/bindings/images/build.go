@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -558,14 +557,14 @@ func nTar(excludes []string, sources ...string) (io.ReadCloser, error) {
 				merr = multierror.Append(merr, err)
 				return
 			}
-			err = filepath.WalkDir(s, func(path string, d fs.DirEntry, err error) error {
+			err = filepath.Walk(s, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
 
 				// check if what we are given is an empty dir, if so then continue w/ it. Else return.
 				// if we are given a file or a symlink, we do not want to exclude it.
-				if d.IsDir() && s == path {
+				if info.IsDir() && s == path {
 					var p *os.File
 					p, err = os.Open(path)
 					if err != nil {
@@ -589,11 +588,7 @@ func nTar(excludes []string, sources ...string) (io.ReadCloser, error) {
 					return nil
 				}
 
-				if d.Type().IsRegular() { // add file item
-					info, err := d.Info()
-					if err != nil {
-						return err
-					}
+				if info.Mode().IsRegular() { // add file item
 					di, isHardLink := checkHardLink(info)
 					if err != nil {
 						return err
@@ -629,11 +624,7 @@ func nTar(excludes []string, sources ...string) (io.ReadCloser, error) {
 						seen[di] = name
 					}
 					return err
-				} else if d.IsDir() { // add folders
-					info, err := d.Info()
-					if err != nil {
-						return err
-					}
+				} else if info.Mode().IsDir() { // add folders
 					hdr, lerr := tar.FileInfoHeader(info, name)
 					if lerr != nil {
 						return lerr
@@ -643,12 +634,8 @@ func nTar(excludes []string, sources ...string) (io.ReadCloser, error) {
 					if lerr := tw.WriteHeader(hdr); lerr != nil {
 						return lerr
 					}
-				} else if d.Type()&os.ModeSymlink != 0 { // add symlinks as it, not content
+				} else if info.Mode()&os.ModeSymlink != 0 { // add symlinks as it, not content
 					link, err := os.Readlink(path)
-					if err != nil {
-						return err
-					}
-					info, err := d.Info()
 					if err != nil {
 						return err
 					}
