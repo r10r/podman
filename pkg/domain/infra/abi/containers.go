@@ -223,6 +223,7 @@ func (ic *ContainerEngine) ContainerStop(ctx context.Context, namesOrIds []strin
 				return err
 			}
 		}
+		// FIXME
 		err = c.Cleanup(ctx)
 		if err != nil {
 			// Issue #7384 and #11384: If the container is configured for
@@ -1240,6 +1241,7 @@ func (ic *ContainerEngine) ContainerCleanup(ctx context.Context, namesOrIds []st
 				report.RmErr = fmt.Errorf("failed to clean up and remove container %v: %w", ctr.ID(), err)
 			}
 		} else {
+			// FIXME
 			err := ctr.Cleanup(ctx)
 			if err != nil {
 				report.CleanErr = fmt.Errorf("failed to clean up container %v: %w", ctr.ID(), err)

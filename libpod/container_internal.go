@@ -342,9 +342,11 @@ func (c *Container) ensureState(states ...define.ContainerStatus) bool {
 // This function should suffice to ensure a container's state is accurate and
 // it is valid for use.
 func (c *Container) syncContainer() error {
+	logrus.Tracef("syncContainer before state update: %#v\n", c.state.State)
 	if err := c.runtime.state.UpdateContainer(c); err != nil {
 		return err
 	}
+	logrus.Tracef("syncContainer after state update: %#v\n", c.state.State)
 	// If runtime knows about the container, update its status in runtime
 	// And then save back to disk
 	if c.ensureState(define.ContainerStateCreated, define.ContainerStateRunning, define.ContainerStateStopped, define.ContainerStateStopping, define.ContainerStatePaused) {
